@@ -187,9 +187,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 st.subheader("🎯 波段佈局參考價位")
                 if is_bullish or close_p >= ma20:
                     st.write(f"* **極短線強勢切入點 (5日線)：** `{ma5:.2f} 元` 附近")
-                    # 新增這行計算 10 日均線
-df['MA10'] = df['Close'].rolling(window=10).mean()
-
+                    st.write(f"* **短線強勢支撐 (10日線)：** `{ma10:.2f} 元` 附近")
                     st.write(f"* **標準波段安全買點 (20日線)：** `{ma20:.2f} 元` 附近")
                 else:
                     st.write(f"* **偏保守安全買點 (60天低點)：** `{lowest_60d:.2f} 元` 附近")
