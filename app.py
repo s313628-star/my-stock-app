@@ -193,7 +193,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                     st.write(f"* **偏保守安全買點 (60天低點)：** `{lowest_60d:.2f} 元` 附近")
                 st.error(f"🛡️ **終極防守退場價 (停損點)：** `{stop_loss:.2f} 元` (跌破請執行紀律停損)")
 
-                                st.divider()
+                st.divider()
 
                 st.subheader("⚖️ 風報比交易評估")
                 potential_profit = target_1382 - close_p
