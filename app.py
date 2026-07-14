@@ -224,7 +224,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
 
                 st.divider()
 
-                                st.subheader("🔮 未來上漲目標預估")
+                st.subheader("🔮 未來上漲目標預估")
                 st.write(f"* **近 60 天波段大魔王（強壓力）：** `{highest_60d:.2f} 元`")
                 st.write(f"* **黃金波段第一目標價：** `{target_1382:.2f} 元` (1.382倍)")
                 st.write(f"* **黃金波段第二目標價：** `{target_1618:.2f} 元` (1.618倍)")
