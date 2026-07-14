@@ -90,9 +90,14 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                     p_close, p_open, p_high, p_low = float(df['Close'].iloc[-2]), float(df['Open'].iloc[-2]), float(df['High'].iloc[-2]), float(df['Low'].iloc[-2])
                     p2_close, p2_open = float(df['Close'].iloc[-3]), float(df['Open'].iloc[-3])
                     
+                    # 請找到這個區塊並替換：
                     df['MA5'] = df['Close'].rolling(5).mean()
+                    df['MA10'] = df['Close'].rolling(10).mean()  # 在這裡補這一行
                     df['MA20'] = df['Close'].rolling(20).mean()
-                    ma5, ma20 = float(df['MA5'].iloc[-1]), float(df['MA20'].iloc[-1])
+
+                     # 將 ma10 補到變數列中：
+                    ma5, ma10, ma20 = float(df['MA5'].iloc[-1]), float(df['MA10'].iloc[-1]), float(df['MA20'].iloc[-1])
+
                     
                     df = calculate_kd(df)
                     df['RSI'] = calculate_rsi(df)
