@@ -1,4 +1,4 @@
-import streamlit as st
+Import streamlit as st
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -91,9 +91,8 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                     p2_close, p2_open = float(df['Close'].iloc[-3]), float(df['Open'].iloc[-3])
                     
                     df['MA5'] = df['Close'].rolling(5).mean()
-                    df['MA10'] = df['Close'].rolling(10).mean() # 【加入MA10計算】
                     df['MA20'] = df['Close'].rolling(20).mean()
-                    ma5, ma10, ma20 = float(df['MA5'].iloc[-1]), float(df['MA10'].iloc[-1]), float(df['MA20'].iloc[-1])
+                    ma5, ma20 = float(df['MA5'].iloc[-1]), float(df['MA20'].iloc[-1])
                     
                     df = calculate_kd(df)
                     df['RSI'] = calculate_rsi(df)
@@ -186,16 +185,17 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 st.divider()
 
                 st.subheader("🎯 波段佈局參考價位")
-                # 【加入 MA10 顯示】
                 if is_bullish or close_p >= ma20:
                     st.write(f"* **極短線強勢切入點 (5日線)：** `{ma5:.2f} 元` 附近")
-                    st.write(f"* **短線強勢支撐 (10日線)：** `{ma10:.2f} 元` 附近")
+                    # 新增這行計算 10 日均線
+df['MA10'] = df['Close'].rolling(window=10).mean()
+
                     st.write(f"* **標準波段安全買點 (20日線)：** `{ma20:.2f} 元` 附近")
                 else:
                     st.write(f"* **偏保守安全買點 (60天低點)：** `{lowest_60d:.2f} 元` 附近")
                 st.error(f"🛡️ **終極防守退場價 (停損點)：** `{stop_loss:.2f} 元` (跌破請執行紀律停損)")
 
-                st.divider()
+                                st.divider()
 
                 st.subheader("⚖️ 風報比交易評估")
                 potential_profit = target_1382 - close_p
@@ -206,6 +206,12 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 st.write(f"* **預估潛在利潤：** `+{potential_profit:.2f} 元`  |  **承擔潛在風險：** `-{potential_risk:.2f} 元`")
                 st.write(f"* **當前交易風報比：** `{rr_ratio:.2f}`")
                 
+                # --- 新增的智慧解讀區塊 ---
+                if is_bullish and rr_ratio < 1.5:
+                    st.warning("💡 **策略提醒：形態看漲但風報比不佳**")
+                    st.write("目前股價距離形態突破點已有一段距離，現在進場風險較高。")
+                    st.write("👉 **建議操作策略：** 不要直接追價，請掛單在 `均線(MA5 或 MA10)` 附近等拉回再切入，以縮小停損空間，提升風報比。")
+                
                 if not is_market_bullish:
                     st.warning("❌ **大盤偏空警示：** 雖然風報比可行，但因大盤環境差，系統勝率會下降，建議縮減部位。")
                 else:
@@ -213,8 +219,10 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         st.success("🟢 **高勝算交易：** 風報比大於 2.0！賺錢空間是賠錢空間的 2 倍以上！")
                     elif rr_ratio >= 1.5:
                         st.warning("🟡 **中等交易：** 風報比在 1.5 ~ 2.0 之間，利潤合理，可分批小量建倉。")
-                    else:
+                    elif rr_ratio < 1.5 and not is_bullish:
                         st.error("❌ **不合算交易：** 風報比低於 1.5。承擔風險相對較高，建議放棄。")
+                # -----------------------
+
 
                 st.divider()
 
@@ -222,4 +230,4 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 st.write(f"* **近 60 天波段大魔王（強壓力）：** `{highest_60d:.2f} 元`")
                 st.write(f"* **黃金波段第一目標價：** `{target_1382:.2f} 元` (1.382倍)")
                 st.write(f"* **黃金波段第二目標價：** `{target_1618:.2f} 元` (1.618倍)")
-                st.caption("⚠️ 聲明：本網頁僅供技術分析討論，不構成投資與買賣建議。")
+                st.caption("⚠️ 聲明：本網頁僅供技術分析討論，不構成投資與買賣建議。
