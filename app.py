@@ -82,6 +82,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         df.columns = df.columns.get_level_values(-1)
                     
                     df = df.dropna()
+                    
                     df['MA5'] = df['Close'].rolling(5).mean()
                     df['MA10'] = df['Close'].rolling(10).mean()
                     df['MA20'] = df['Close'].rolling(20).mean()
@@ -149,21 +150,18 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 col2.metric("今日成交量", f"{volume/1000:,.0f} 張", f"均量 {vol_ratio:.1f} 倍")
                 col3.metric("技術指標", f"RSI: {rsi_val:.1f}", f"K/D: {k_val:.1f}/{d_val:.1f}")
                 
-                # --- [新增] 紅K強度診斷區塊 ---
-                st.subheader("🕯️ 今日 K 線強度診斷")
-                if body > 0:
-                    upper_shadow_len = high_p - close_p
-                    lower_shadow_len = open_p - low_p
-                    if upper_shadow_len < abs_body * 0.2 and lower_shadow_len < abs_body * 0.2:
-                        st.write("🔴 **紅K型態：漲勢強** (實體飽滿，多方掌控局勢，明日續漲機率高)")
-                    elif lower_shadow_len > abs_body * 0.5:
-                        st.write("🔴 **紅K型態：先跌後漲，多方較強** (有下影線支撐，買盤積極，看好後續表現)")
-                    elif upper_shadow_len > abs_body * 0.5:
-                        st.write("🔴 **紅K型態：空方減弱** (上影線較長，雖為紅K但需留意上檔賣壓，明日震盪機率高)")
-                    else:
-                        st.write("🔴 **紅K型態：多頭格局**")
-                else:
-                    st.write("🟢 今日非紅K型態，請參考下方策略建議。")
+                # --- [新增] 明日趨勢統計輔助 ---
+                st.subheader("🔮 明日走勢機率輔助診斷")
+                strength_score = 0
+                if body > 0 and upper_shadow < abs_body * 0.2 and lower_shadow < abs_body * 0.2: strength_score += 3 # 漲勢強
+                elif body > 0 and lower_shadow > abs_body * 0.5: strength_score += 2 # 先跌後漲
+                elif body > 0 and upper_shadow > abs_body * 0.5: strength_score += 1 # 空方減弱
+                if k_val > d_val: strength_score += 1
+                if is_market_bullish: strength_score += 1
+                
+                if strength_score >= 4: st.success("🚀 明日漲勢機率較高 (統計強勢型態)")
+                elif strength_score >= 2: st.info("⚖️ 明日震盪機率較高 (觀察盤中氣勢)")
+                else: st.error("📉 明日下跌機率偏高 (缺乏強勢動能)")
                 # ----------------------------
 
                 if not is_market_bullish:
@@ -173,8 +171,8 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 
                 st.divider()
                 st.subheader("💡 系統策略建議")
-                # (其餘程式碼未更動，已完整包含在下方)
                 is_bullish = False
+                
                 if buy_signals and not sell_signals:
                     is_bullish = True
                     if rsi_val > 80 or k_val > 80:
