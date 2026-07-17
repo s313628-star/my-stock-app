@@ -82,6 +82,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         df.columns = df.columns.get_level_values(-1)
                     
                     df = df.dropna()
+                    
                     df['MA5'] = df['Close'].rolling(5).mean()
                     df['MA10'] = df['Close'].rolling(10).mean()
                     df['MA20'] = df['Close'].rolling(20).mean()
@@ -130,7 +131,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 if p_body > 0 and body < 0 and close_p < p_open and open_p > p_close: sell_signals.append("看跌吞沒（空頭反撲）")
                 if p_body < 0 and body > 0 and open_p < p_low and close_p > (p_open + p_close)/2: buy_signals.append("穿刺線（多頭強力反擊）")
                 if p_body > 0 and body < 0 and open_p > p_high and close_p < (p_open + p_close)/2: sell_signals.append("烏雲蓋頂（趨勢要拐頭）")
-                if p2_body < 0 and abs_p_body < abs(p2_body)*0.3 and body > 0 and close_p > (p2_open + p2_c)/2: buy_signals.append("晨星（經典底部看漲）")
+                if p2_body < 0 and abs_p_body < abs(p2_body)*0.3 and body > 0 and close_p > (p2_open + p2_close)/2: buy_signals.append("晨星（經典底部看漲）")
                 if p2_body > 0 and abs_p_body < abs(p2_body)*0.3 and body < 0 and close_p < (p2_open + p2_close)/2: sell_signals.append("黃昏星（經典頂部看跌）")
                 
                 recent_max = df['Close'].tail(40).max()
@@ -149,17 +150,35 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 col2.metric("今日成交量", f"{volume/1000:,.0f} 張", f"均量 {vol_ratio:.1f} 倍")
                 col3.metric("技術指標", f"RSI: {rsi_val:.1f}", f"K/D: {k_val:.1f}/{d_val:.1f}")
                 
-                # --- [新增] 老王分析師技術邏輯 ---
-                st.subheader("🎙️ 老王邏輯技術觀察")
-                wa_score = 0
-                if close_p > ma20: wa_score += 2 # 站上月線
-                if k_val > d_val: wa_score += 1 # KD黃金交叉
-                if vol_ratio > 1.2: wa_score += 1 # 量能增溫
+                # --- [新增] 明日趨勢統計輔助 ---
+                st.subheader("🔮 明日走勢機率輔助診斷")
+                strength_score = 0
+                if body > 0 and upper_shadow < abs_body * 0.2 and lower_shadow < abs_body * 0.2: strength_score += 3 # 漲勢強
+                elif body > 0 and lower_shadow > abs_body * 0.5: strength_score += 2 # 先跌後漲
+                elif body > 0 and upper_shadow > abs_body * 0.5: strength_score += 1 # 空方減弱
+                if k_val > d_val: strength_score += 1
+                if is_market_bullish: strength_score += 1
                 
-                if wa_score >= 3: st.success("老王觀點：『目前處於多頭攻擊態勢，月線不破，偏多操作。』")
-                elif wa_score >= 1: st.warning("老王觀點：『多空震盪，嚴守月線支撐，破線即出場。』")
-                else: st.error("老王觀點：『空頭排列，量縮下跌，場外觀望才是最高指導原則。』")
+                if strength_score >= 4: st.success("🚀 明日漲勢機率較高 (統計強勢型態)")
+                elif strength_score >= 2: st.info("⚖️ 明日震盪機率較高 (觀察盤中氣勢)")
+                else: st.error("📉 明日下跌機率偏高 (缺乏強勢動能)")
                 # ----------------------------
+
+                # --- [新增] 老王分析師技術觀察獨立區塊 ---
+                st.subheader("🎙️ 老王分析師技術觀察")
+                wa_score = 0
+                # 均線多頭排列判斷
+                if close_p > ma5 and ma5 > ma10 and ma10 > ma20: wa_score += 2
+                # 量能增溫判斷
+                if vol_ratio > 1.2: wa_score += 1
+                # 指標黃金交叉與多方趨勢
+                if k_val > d_val and rsi_val > 50: wa_score += 1
+                
+                if wa_score >= 3: st.success("老王觀點：『目前為多頭攻擊態勢，均線排列整齊且量能增溫，月線不破，偏多操作。』")
+                elif wa_score >= 2: st.warning("老王觀點：『個股多空震盪，請嚴守月線支撐，若出現帶量突破，才會有續攻力道。』")
+                elif wa_score >= 1: st.info("老王觀點：『目前處於多空糾結，月線岌岌可危，切勿盲目追高，觀察是否有守。』")
+                else: st.error("老王觀點：『空頭排列結構，量能萎縮下跌，技術指標全面轉弱，場外觀望才是最高指導原則。』")
+                # ----------------------------------------
 
                 if not is_market_bullish:
                     st.warning(f"⚠️ **大盤結構偏空**：加權指數目前收在月線之下。即使個股有買點，也請嚴格控制資金部位！")
@@ -169,6 +188,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 st.divider()
                 st.subheader("💡 系統策略建議")
                 is_bullish = False
+                
                 if buy_signals and not sell_signals:
                     is_bullish = True
                     if rsi_val > 80 or k_val > 80:
