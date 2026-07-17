@@ -217,7 +217,7 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         st.info("⏳ **橫盤整理中**：目前無明顯趨勢，建議先不急著進出場。")
 
                 st.divider()
-                                st.subheader("🎯 波段佈局參考價位")
+                st.subheader("🎯 波段佈局參考價位")
                 # 不論多空，一律顯示均線參考
                 st.write(f"* **極短線強勢切入點 (5日線)：** `{ma5:.2f} 元`")
                 st.write(f"* **短線強勢支撐 (10日線)：** `{ma10:.2f} 元`")
