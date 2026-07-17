@@ -165,19 +165,29 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 # ----------------------------
 
                 # --- [新增] 老王分析師技術觀察獨立區塊 ---
-                st.subheader("🎙️ 老王分析師技術觀察")
-                wa_score = 0
-                # 均線多頭排列判斷
-                if close_p > ma5 and ma5 > ma10 and ma10 > ma20: wa_score += 2
-                # 量能增溫判斷
-                if vol_ratio > 1.2: wa_score += 1
-                # 指標黃金交叉與多方趨勢
-                if k_val > d_val and rsi_val > 50: wa_score += 1
+                                # --- [老王完整核心技術觀點 (完整版)] ---
+                st.subheader("🎙️ 老王分析師完整觀點")
                 
-                if wa_score >= 3: st.success("老王觀點：『目前為多頭攻擊態勢，均線排列整齊且量能增溫，月線不破，偏多操作。』")
-                elif wa_score >= 2: st.warning("老王觀點：『個股多空震盪，請嚴守月線支撐，若出現帶量突破，才會有續攻力道。』")
-                elif wa_score >= 1: st.info("老王觀點：『目前處於多空糾結，月線岌岌可危，切勿盲目追高，觀察是否有守。』")
-                else: st.error("老王觀點：『空頭排列結構，量能萎縮下跌，技術指標全面轉弱，場外觀望才是最高指導原則。』")
+                # 老王核心觀察參數計算
+                is_bull_alignment = (ma5 > ma10) and (ma10 > ma20) # 均線多頭排列
+                is_vol_strong = vol_ratio > 1.2 # 量能增溫
+                is_kd_golden = k_val > d_val # KD 黃金交叉
+                is_rsi_bull = rsi_val > 50 # RSI 多方趨勢
+                is_above_ma20 = close_p > ma20 # 關鍵月線防守
+                
+                # 總結評估
+                if is_bull_alignment and is_above_ma20 and is_vol_strong:
+                    st.success("老王觀點：『均線多頭排列，配合量能增溫，這是最標準的強勢攻擊格局。只要月線(MA20)沒跌破，趨勢就是看漲，順勢單續抱即可。』")
+                elif is_above_ma20 and is_kd_golden:
+                    st.warning("老王觀點：『股價站在月線之上，代表多頭結構未死。不過若量能無法持續放大，容易陷入高檔整理，請觀察是否有帶量突破的攻擊訊號。』")
+                elif not is_above_ma20 and is_vol_strong:
+                    st.error("老王觀點：『這是典型的「誘多」陷阱！跌破月線後的爆量反彈，通常是法人在趁機出貨，散戶務必看清楚，破線就是賣出，絕對不要攤平！』")
+                elif not is_bull_alignment and close_p < ma20:
+                    st.error("老王觀點：『空頭排列確立。這種走勢最危險，下跌過程均線會形成層層壓力。技術分析紀律第一，空手觀望保存實力，切勿買進。』")
+                else:
+                    st.info("老王觀點：『目前為多空不明的整理階段。月線是關鍵的多空分水嶺，沒站上月線前，不要隨意進場佈局，多看少做。』")
+                # ----------------------------------------
+
                 # ----------------------------------------
 
                 if not is_market_bullish:
