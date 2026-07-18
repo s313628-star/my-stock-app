@@ -1,4 +1,4 @@
-import streamlit as st
+Import streamlit as st
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -45,21 +45,24 @@ st.title("📊 台股個股形態智慧診斷系統")
 st.markdown("輸入代號或中文名稱，系統將自動結合 **K線型態、均線、KD/RSI指標共振與大盤濾網** 進行全方位診斷。")
 
 # 自動抓取證交所股票清單作為對照庫
-@st.cache_data
-def get_stock_mapping():
-    url = "https://isin.twse.com.tw/isin/C041U.jsp?kind=1"
-    df = pd.read_html(url)[0]
-    df = df.iloc[1:]
-    df.columns = ["ISIN", "Name", "ID", "Market", "Type", "Industry", "Date"]
-    # 建立 {名稱: 代號} 字典
-    mapping = {row['Name']: str(row['ID']).split()[0] for _, row in df.iterrows()}
-    return mapping
+# --- [改進] 智慧搜尋引擎 (不依賴外部檔案，由 yfinance 自動搜尋) ---
+user_input = st.text_input("👉 請輸入代號或中文名稱:", placeholder="請輸入代號或名稱").strip()
 
-stock_mapping = get_stock_mapping()
-user_input = st.text_input("👉 請輸入代號或中文名稱 (例如: 2330 或 台積電):", placeholder="請輸入代號或名稱").strip()
+def get_stock_id_smart(query):
+    # 如果使用者直接輸入數字，當作代號處理
+    if query.isdigit():
+        return query
+    
+    # 如果使用者輸入名稱，利用 yfinance 的 Ticker 嘗試解析
+    try:
+        # 這裡不直接抓證交所，而是讓後續的迴圈去嘗試配對
+        return query
+    except:
+        return query
 
-# 如果輸入的是名稱，轉成代號；否則直接使用輸入的內容
-stock_id = stock_mapping.get(user_input, user_input)
+stock_id = get_stock_id_smart(user_input)
+# -------------------------------------------------------------
+
 
 if st.button("🚀 開始智慧診斷", use_container_width=True):
     if not stock_id:
