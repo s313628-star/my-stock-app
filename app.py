@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import warnings
+import twstock
+
 
 warnings.filterwarnings("ignore")
 
@@ -49,12 +51,18 @@ st.markdown("輸入代號或中文名稱，系統將自動結合 **K線型態、
 user_input = st.text_input("👉 請輸入代號或中文名稱:", placeholder="請輸入代號或名稱").strip()
 
 def get_stock_id_smart(query):
-    # 如果使用者直接輸入數字，直接回傳當作代號處理
+    # 如果使用者直接輸入數字，直接回傳
     if query.isdigit():
         return query
     
-    # 這裡讓 function 直接返回 query 即可
-    # 因為我們已經把搜尋邏輯整合進下方的迴圈了
+    # 嘗試用 twstock 進行中文名稱轉代號
+    try:
+        for code, info in twstock.codes.items():
+            if query == info.name:
+                return code
+    except:
+        pass
+        
     return query
 
 
