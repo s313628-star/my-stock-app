@@ -49,16 +49,14 @@ st.markdown("輸入代號或中文名稱，系統將自動結合 **K線型態、
 user_input = st.text_input("👉 請輸入代號或中文名稱:", placeholder="請輸入代號或名稱").strip()
 
 def get_stock_id_smart(query):
-    # 如果使用者直接輸入數字，當作代號處理
+    # 如果使用者直接輸入數字，直接回傳當作代號處理
     if query.isdigit():
         return query
     
-    # 如果使用者輸入名稱，利用 yfinance 的 Ticker 嘗試解析
-    try:
-        # 這裡不直接抓證交所，而是讓後續的迴圈去嘗試配對
-        return query
-    except:
-        return query
+    # 這裡讓 function 直接返回 query 即可
+    # 因為我們已經把搜尋邏輯整合進下方的迴圈了
+    return query
+
 
 stock_id = get_stock_id_smart(user_input)
 # -------------------------------------------------------------
@@ -73,9 +71,11 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
             df = None
             success_id, stock_name, industry = "", "", "未知產業"
             
-            for suffix in [".TW", ".TWO"]:
+                        # 優先搜尋原始輸入 (支援名稱)，其次嘗試補上 .TW/.TWO 後綴
+            search_list = [stock_id, f"{stock_id}.TW", f"{stock_id}.TWO"]
+            
+            for target_id in search_list:
                 try:
-                    target_id = f"{stock_id}{suffix}"
                     ticker = yf.Ticker(target_id)
                     df_test = ticker.history(period="60d")
                     if df_test is not None and not df_test.empty and len(df_test) >= 20:
@@ -83,13 +83,14 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         success_id = target_id
                         try:
                             info = ticker.info
-                            stock_name = info.get('longName', '') or info.get('shortName', '')
+                            stock_name = info.get('longName', '') or info.get('shortName', stock_id)
                             industry = info.get('industry', '未知產業')
                         except:
                             stock_name = f"台股 {stock_id}"
                         break
                 except:
                     continue
+
             
             if df is None:
                 st.error(f"❌ 找不到代號「{stock_id}」的股票。請確認代號是否正確、該股是否已上市櫃。")
