@@ -164,20 +164,27 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 else: st.error("📉 明日下跌機率偏高 (缺乏強勢動能)")
                 # ----------------------------
 
-                # --- [新增] 老王分析師技術觀察獨立區塊 ---
+                          # --- [新增] 老王分析師技術觀察獨立區塊 (動態讀取) ---
                 st.subheader("🎙️ 老王分析師技術觀察")
-                wa_score = 0
-                # 均線多頭排列判斷
-                if close_p > ma5 and ma5 > ma10 and ma10 > ma20: wa_score += 2
-                # 量能增溫判斷
-                if vol_ratio > 1.2: wa_score += 1
-                # 指標黃金交叉與多方趨勢
-                if k_val > d_val and rsi_val > 50: wa_score += 1
-                
-                if wa_score >= 3: st.success("老王觀點：『目前為多頭攻擊態勢，均線排列整齊且量能增溫，月線不破，偏多操作。』")
-                elif wa_score >= 2: st.warning("老王觀點：『個股多空震盪，請嚴守月線支撐，若出現帶量突破，才會有續攻力道。』")
-                elif wa_score >= 1: st.info("老王觀點：『目前處於多空糾結，月線岌岌可危，切勿盲目追高，觀察是否有守。』")
-                else: st.error("老王觀點：『空頭排列結構，量能萎縮下跌，技術指標全面轉弱，場外觀望才是最高指導原則。』")
+                try:
+                    # 程式會去讀取外部的文字檔，你可以隨時修改該檔案，程式不用重新部署
+                    with open("wang_views.txt", "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                        
+                    found = False
+                    for line in lines:
+                        # 如果檔案中提到該股票代號，就顯示該行作為老王觀點
+                        if str(stock_id) in line:
+                            st.info(f"🎙️ 老王最新觀點：{line.strip()}")
+                            found = True
+                            break
+                    
+                    if not found:
+                        st.warning("🎙️ 老王目前尚未針對此個股發表特定觀點，請參考技術面訊號。")
+                except FileNotFoundError:
+                    st.error("🎙️ 尚未建立觀點資料庫 (wang_views.txt)，請先建立檔案以啟用動態比對。")
+                # ----------------------------------------
+
                 # ----------------------------------------
 
                 if not is_market_bullish:
