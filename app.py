@@ -164,26 +164,56 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                 else: st.error("📉 明日下跌機率偏高 (缺乏強勢動能)")
                 # ----------------------------
 
-                          # --- [新增] 老王分析師技術觀察獨立區塊 (動態讀取) ---
+                                       # --- [新增] 老王分析師技術觀察邏輯引擎 (調整數值版) ---
                 st.subheader("🎙️ 老王分析師技術觀察")
-                try:
-                    # 程式會去讀取外部的文字檔，你可以隨時修改該檔案，程式不用重新部署
-                    with open("wang_views.txt", "r", encoding="utf-8") as f:
-                        lines = f.readlines()
-                        
-                    found = False
-                    for line in lines:
-                        # 如果檔案中提到該股票代號，就顯示該行作為老王觀點
-                        if str(stock_id) in line:
-                            st.info(f"🎙️ 老王最新觀點：{line.strip()}")
-                            found = True
-                            break
-                    
-                    if not found:
-                        st.warning("🎙️ 老王目前尚未針對此個股發表特定觀點，請參考技術面訊號。")
-                except FileNotFoundError:
-                    st.error("🎙️ 尚未建立觀點資料庫 (wang_views.txt)，請先建立檔案以啟用動態比對。")
+                
+                # 老王核心指標數值：
+                # 1. 均量需要爆出 1.5 倍 (主力表態)
+                # 2. 均線依賴 MA20 (月線)
+                # 3. RSI 超賣/超買區域設定更嚴格 (30/70)
+                is_above_ma20 = close_p > ma20
+                is_kd_gold = k_val > d_val
+                is_vol_break = vol_ratio > 1.5 
+                is_overheat = rsi_val > 70
+                is_oversold = rsi_val < 30
+                is_bullish_engulf = (p_body < 0 and body > 0 and close_p > p_open and open_p < p_close)
+                
+                # 矩陣式邏輯判斷
+                comment = "🎙️ 老王：『"
+                
+                if is_above_ma20:
+                    if is_kd_gold and is_vol_break:
+                        comment += "站上月線且爆出 1.5 倍攻擊量，指標黃金交叉，這是主力強勢表態，多頭攻擊格局！"
+                    elif is_kd_gold:
+                        comment += "月線多頭排列，雖然量能稍平，但只要守住 20 日生命線，行情都還有戲。"
+                    elif is_overheat:
+                        comment += "乖離率已大，RSI 超過 70 進入過熱區，短線不建議追高，等拉回月線支撐再切入。"
+                    else:
+                        comment += "目前在月線之上整理，多空力道拉鋸，請嚴守月線這條生命線，沒破就續抱。"
+                else:
+                    if is_oversold:
+                        comment += "RSI 已跌破 30 超賣區，技術面隨時有反彈機會，但上方套牢賣壓重，搶短要快。"
+                    elif is_kd_gold:
+                        comment += "雖然指標黃金交叉，但還在月線之下，這是空頭結構中的反彈，上方壓力沈重，先看戲。"
+                    elif is_vol_break:
+                        comment += "跌破月線後爆出 1.5 倍成交量，這是恐慌性出貨，千萬不要去接掉下來的刀子！"
+                    else:
+                        comment += "空頭排列結構，月線壓力沈重，趨勢向下，場外觀望才是最高指導原則。"
+                
+                if is_bullish_engulf:
+                    comment += " 此外，今日強勢吞沒前一日黑 K，多方有強力反撲意圖。"
+                
+                comment += "』"
+                
+                # 顯示判斷結果
+                if "攻擊" in comment or "續抱" in comment or "表態" in comment or "強力反撲" in comment:
+                    st.success(comment)
+                elif "觀望" in comment or "壓力" in comment or "刀子" in comment:
+                    st.error(comment)
+                else:
+                    st.info(comment)
                 # ----------------------------------------
+
 
                 # ----------------------------------------
 
@@ -224,31 +254,38 @@ if st.button("🚀 開始智慧診斷", use_container_width=True):
                         st.info("⏳ **橫盤整理中**：目前無明顯趨勢，建議先不急著進出場。")
 
                 st.divider()
-                st.subheader("🎯 波段佈局參考價位")
-                # 不論多空，一律顯示均線參考
-                st.write(f"* **極短線強勢切入點 (5日線)：** `{ma5:.2f} 元`")
-                st.write(f"* **短線強勢支撐 (10日線)：** `{ma10:.2f} 元`")
-                st.write(f"* **標準波段安全買點 (20日線)：** `{ma20:.2f} 元`")
-                st.write(f"* **偏保守安全買點 (60天低點)：** `{lowest_60d:.2f} 元`")
-
-                st.error(f"🛡️ **終極防守退場價 (停損點)：** `{stop_loss:.2f} 元`")
+                st.subheader("🎯 老王式波段佈局關鍵價位")
+                
+                # 老王思維：以月線(MA20)作為多空分水嶺，所有佈局均以此為核心
+                # 1. 如果股價在月線之上，月線是最佳支撐
+                # 2. 如果股價在月線之下，月線是壓力，需等待帶量站上
+                st.write(f"* **多空生命線 (月線)：** `{ma20:.2f} 元`")
+                st.write(f"* **強勢攻擊門檻 (5日/10日均線)：** `{ma5:.2f} / {ma10:.2f} 元`")
+                st.write(f"* **防守型支撐 (60日線低點)：** `{lowest_60d:.2f} 元`")
+                
+                # 停損邏輯改進：嚴格設定為月線下方 3% 或 60 日低點，這才是老王強調的紀律
+                stop_loss = ma20 * 0.97 if close_p > ma20 else lowest_60d * 0.97
+                st.error(f"🛡️ **老王鐵律退場價 (嚴格停損)：** `{stop_loss:.2f} 元`")
 
                 st.divider()
-                st.subheader("⚖️ 風報比交易評估")
-                potential_profit = target_1382 - close_p
+                st.subheader("⚖️ 風報比交易評估 (老王邏輯)")
+                # 風報比計算：利潤取黃金目標價(1.618)，風險取嚴格停損距離
+                potential_profit = target_1618 - close_p
                 potential_risk = close_p - stop_loss
                 if potential_risk <= 0: potential_risk = 0.01
                 rr_ratio = potential_profit / potential_risk
-                st.write(f"* **預估潛在利潤：** `+{potential_profit:.2f} 元` | **承擔潛在風險：** `-{potential_risk:.2f} 元`")
-                st.write(f"* **當前交易風報比：** `{rr_ratio:.2f}`")
-
-                if is_bullish and rr_ratio < 1.5:
-                    st.warning("💡 **策略提醒：形態看漲但風報比不佳**，建議掛單在均線附近再切入。")
                 
-                if is_market_bullish:
-                    if rr_ratio >= 2.0: st.success("🟢 **高勝算交易：風報比 > 2.0**")
-                    elif rr_ratio >= 1.5: st.warning("🟡 **中等交易：風報比 1.5 ~ 2.0**")
-                    elif rr_ratio < 1.5 and not is_bullish: st.error("❌ **不合算交易：風險過高**")
+                st.write(f"* **潛在獲利目標 (1.618波段目標)：** `+{potential_profit:.2f} 元`")
+                st.write(f"* **必須承擔的風險距離：** `-{potential_risk:.2f} 元`")
+                st.write(f"* **交易風報比：** `{rr_ratio:.2f} (老王建議：至少要大於 2.0 才值得進場)`")
+
+                if rr_ratio >= 2.0:
+                    st.success("🟢 **勝算評估：風報比 > 2.0，符合老王期望的『低風險、高獲利』標準。**")
+                elif rr_ratio >= 1.5:
+                    st.warning("🟡 **勝算評估：風報比 1.5 ~ 2.0，可考慮分批佈局。**")
+                else:
+                    st.error("❌ **勝算評估：風險大於獲利潛力，不符合老王的操作紀律，請觀望。**")
+
 
                 st.divider()
                 st.subheader("🔮 未來上漲目標預估")
