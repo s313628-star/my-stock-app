@@ -42,9 +42,24 @@ def get_market_status():
     return True, 0.0, 0.0
 
 st.title("📊 台股個股形態智慧診斷系統")
-st.markdown("輸入台灣股票代號，系統將自動結合 **K線型態、均線、KD/RSI指標共振與大盤濾網** 進行全方位診斷。")
+st.markdown("輸入代號或中文名稱，系統將自動結合 **K線型態、均線、KD/RSI指標共振與大盤濾網** 進行全方位診斷。")
 
-stock_id = st.text_input("👉 請輸入台灣股票代號 (例如: 2330, 5351):", placeholder="請輸入4位數字代號").strip()
+# 自動抓取證交所股票清單作為對照庫
+@st.cache_data
+def get_stock_mapping():
+    url = "https://isin.twse.com.tw/isin/C041U.jsp?kind=1"
+    df = pd.read_html(url)[0]
+    df = df.iloc[1:]
+    df.columns = ["ISIN", "Name", "ID", "Market", "Type", "Industry", "Date"]
+    # 建立 {名稱: 代號} 字典
+    mapping = {row['Name']: str(row['ID']).split()[0] for _, row in df.iterrows()}
+    return mapping
+
+stock_mapping = get_stock_mapping()
+user_input = st.text_input("👉 請輸入代號或中文名稱 (例如: 2330 或 台積電):", placeholder="請輸入代號或名稱").strip()
+
+# 如果輸入的是名稱，轉成代號；否則直接使用輸入的內容
+stock_id = stock_mapping.get(user_input, user_input)
 
 if st.button("🚀 開始智慧診斷", use_container_width=True):
     if not stock_id:
